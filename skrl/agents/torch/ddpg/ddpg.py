@@ -225,6 +225,7 @@ class DDPG(Agent):
         if self._rnn:
             self._rnn_final_states["policy"] = outputs.get("rnn", [])
 
+
         # add exloration noise
         if self._exploration_noise is not None:
             # sample noises
@@ -244,6 +245,9 @@ class DDPG(Agent):
 
                 # modify actions
                 actions.add_(noises)
+                self.track_data("Actions / Max with noise", torch.max(actions).item())
+                self.track_data("Actions / Mean with noise", torch.mean(actions).item())
+                self.track_data("Actions / Min with noise", torch.min(actions).item())
                 if self._backward_compatibility:
                     actions = torch.max(torch.min(actions, self.clip_actions_max), self.clip_actions_min)
                 else:
@@ -259,6 +263,12 @@ class DDPG(Agent):
                 self.track_data("Exploration / Exploration noise (max)", 0)
                 self.track_data("Exploration / Exploration noise (min)", 0)
                 self.track_data("Exploration / Exploration noise (mean)", 0)
+
+            og = actions.subtract(noises)
+            self.track_data("Actions / Max policy", torch.max(og).item())
+            self.track_data("Actions / Mean policy", torch.mean(og).item())
+            self.track_data("Actions / Min policy", torch.min(og).item())
+
 
         return actions, None, outputs
 
