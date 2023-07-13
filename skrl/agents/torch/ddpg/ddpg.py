@@ -242,12 +242,12 @@ class DDPG(Agent):
                       * (self._exploration_initial_scale - self._exploration_final_scale) \
                       + self._exploration_final_scale
                 noises.mul_(scale)
-
+                self.track_data("Actions / Policy (max)", torch.max(actions).item())
+                self.track_data("Actions / Policy (min)", torch.min(actions).item())
+                self.track_data("Actions / Policy (mean)", torch.mean(actions).item())
                 # modify actions
                 actions.add_(noises)
-                self.track_data("Actions / Max with noise", torch.max(actions).item())
-                self.track_data("Actions / Mean with noise", torch.mean(actions).item())
-                self.track_data("Actions / Min with noise", torch.min(actions).item())
+
                 if self._backward_compatibility:
                     actions = torch.max(torch.min(actions, self.clip_actions_max), self.clip_actions_min)
                 else:
@@ -264,11 +264,9 @@ class DDPG(Agent):
                 self.track_data("Exploration / Exploration noise (min)", 0)
                 self.track_data("Exploration / Exploration noise (mean)", 0)
 
-            og = actions.subtract(noises)
-            self.track_data("Actions / Max policy", torch.max(og).item())
-            self.track_data("Actions / Mean policy", torch.mean(og).item())
-            self.track_data("Actions / Min policy", torch.min(og).item())
-
+        self.track_data("Actions / Action (max)", torch.max(actions).item())
+        self.track_data("Actions / Action (min)", torch.min(actions).item())
+        self.track_data("Actions / Action (mean)", torch.mean(actions).item())
 
         return actions, None, outputs
 

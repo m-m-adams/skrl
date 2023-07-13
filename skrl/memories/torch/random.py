@@ -6,14 +6,16 @@ from skrl.memories.torch import Memory
 
 
 class RandomMemory(Memory):
-    def __init__(self,
-                 memory_size: int,
-                 num_envs: int = 1,
-                 device: Optional[Union[str, torch.device]] = None,
-                 export: bool = False,
-                 export_format: str = "pt",
-                 export_directory: str = "",
-                 replacement=True) -> None:
+    def __init__(
+        self,
+        memory_size: int,
+        num_envs: int = 1,
+        device: Optional[Union[str, torch.device]] = None,
+        export: bool = False,
+        export_format: str = "pt",
+        export_directory: str = "",
+        replacement=True,
+    ) -> None:
         """Random sampling memory
 
         Sample a batch from memory randomly
@@ -41,15 +43,19 @@ class RandomMemory(Memory):
 
         :raises ValueError: The export format is not supported
         """
-        super().__init__(memory_size, num_envs, device, export, export_format, export_directory)
+        super().__init__(
+            memory_size, num_envs, device, export, export_format, export_directory
+        )
 
         self._replacement = replacement
 
-    def sample(self,
-               names: Tuple[str],
-               batch_size: int,
-               mini_batches: int = 1,
-               sequence_length: int = 1) -> List[List[torch.Tensor]]:
+    def sample(
+        self,
+        names: Tuple[str],
+        batch_size: int,
+        mini_batches: int = 1,
+        sequence_length: int = 1,
+    ) -> List[List[torch.Tensor]]:
         """Sample a batch from memory randomly
 
         :param names: Tensors names from which to obtain the samples
@@ -68,8 +74,10 @@ class RandomMemory(Memory):
         # compute valid memory sizes
         size = len(self)
         if sequence_length > 1:
-            sequence_indexes = torch.arange(0, self.num_envs * sequence_length, self.num_envs)
-            size -= sequence_indexes[-1].item()
+            sequence_indexes = torch.arange(
+                0, self.num_envs * sequence_length, self.num_envs
+            )
+            size = sequence_indexes[-1].item()
 
         # generate random indexes
         if self._replacement:
@@ -81,7 +89,11 @@ class RandomMemory(Memory):
 
         # generate sequence indexes
         if sequence_length > 1:
-            indexes = (sequence_indexes.repeat(indexes.shape[0], 1) + indexes.view(-1, 1)).view(-1)
+            indexes = (
+                sequence_indexes.repeat(indexes.shape[0], 1) + indexes.view(-1, 1)
+            ).view(-1)
 
         self.sampling_indexes = indexes
-        return self.sample_by_index(names=names, indexes=indexes, mini_batches=mini_batches)
+        return self.sample_by_index(
+            names=names, indexes=indexes, mini_batches=mini_batches
+        )
